@@ -51,9 +51,11 @@ def registro():
         finally:
             cur.close()
             conn.close()
-            return redirect(url_for('registro'))
+        
+        # El return va AFUERA del bloque try/except/finally
+        return redirect(url_for('registro'))
             
-    # Lógica de consulta embebida en la página de registro
+    # Lógica de consulta (solo se ejecuta si el método es GET)
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute('SELECT * FROM usuarios ORDER BY id DESC LIMIT 5')
