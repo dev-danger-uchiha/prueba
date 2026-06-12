@@ -1,15 +1,17 @@
-from locust 
-import HttpUser
-import task
-import between
+import unittest
+import requests
+import time
 
-class TestUsuario(HttpUser):
+# CAMBIA ESTO por tu URL de Render (ej. https://mi-app-flask.onrender.com)
+BASE_URL = "http://127.0.0.1:5000" 
 
-    host = "https://prueba-ecbg.onrender.com"
+class TestIntegracionAplicacion(unittest.TestCase):
 
-    wait_time = between (1, 3)
+    def setUp(self):
+        # Generar un email único basado en el timestamp para evitar fallos por llave única en la BD
+        self.test_email = f"qa_tester_{int(time.time())}@adso.com"
+        self.test_name = "QA Automation User"
 
-    @task
     def test_a_home_page(self):
         """Verifica que el Home Page cargue correctamente (Página 1)"""
         response = requests.get(f"{BASE_URL}/")
@@ -19,6 +21,7 @@ class TestUsuario(HttpUser):
     def test_b_registro_y_consulta(self):
         """Prueba End-to-End: Registra un usuario y verifica que aparezca en la consulta embebida (Página 2)"""
         
+        # 1. Enviar el POST de registro
         payload = {
             "nombre": self.test_name,
             "email": self.test_email

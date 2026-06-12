@@ -19,10 +19,16 @@ def init_db():
         CREATE TABLE IF NOT EXISTS usuarios (
             id SERIAL PRIMARY KEY,
             nombre VARCHAR(100) NOT NULL,
-            email VARCHAR(100) UNIQUE NOT NULL
+            email VARCHAR(100) UNIQUE NOT NULL,
+            futbolista_favorito VARCHAR(100)
         )
     ''')
     conn.commit()
+    try:
+        cur.execute('ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS futbolista_favorito VARCHAR(100);')
+        conn.commit()
+    except Exception:
+        conn.rollback()
     cur.close()
     conn.close()
 
@@ -38,24 +44,23 @@ def registro():
     if request.method == 'POST':
         nombre = request.form['nombre']
         email = request.form['email']
+        futbolista_favorito = request.form['futbolista_favorito']
         
         conn = get_db_connection()
         cur = conn.cursor()
         try:
-            cur.execute('INSERT INTO usuarios (nombre, email) VALUES (%s, %s)', (nombre, email))
+            cur.execute('INSERT INTO usuarios (nombre, email, futbolista_favorito) VALUES (%s, %s, %s)', (nombre, email, futbolista_favorito))
             conn.commit()
-            flash('Usuario registrado exitosamente', 'success')
+            flash('¡Fichaje exitoso! Usuario registrado', 'success')
         except Exception as e:
             conn.rollback()
-            flash('Error: El correo ya existe o la base de datos falló.', 'error')
+            flash('Error: El correo ya está fichado o la base de datos falló.', 'error')
         finally:
             cur.close()
             conn.close()
-        
-        # El return va AFUERA del bloque try/except/finally
-        return redirect(url_for('registro'))
+            return redirect(url_for('registro'))
             
-    # Lógica de consulta (solo se ejecuta si el método es GET)
+    # Lógica de consulta embebida en la página de registro
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute('SELECT * FROM usuarios ORDER BY id DESC LIMIT 5')
